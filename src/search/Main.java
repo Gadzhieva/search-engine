@@ -1,14 +1,21 @@
 package search;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
         List<String> strings = new ArrayList<>();
-        readStrings(strings, scanner);
+        File file = new File(args[1]);
+        Scanner scanner = new Scanner(System.in);
+        try (Scanner fileScanner = new Scanner(file)) {
+            readStrings(strings, fileScanner);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
         while (true) {
             String command = chooseCommand(scanner);
@@ -72,13 +79,8 @@ public class Main {
     }
 
     private static void readStrings(List<String> strings, Scanner scanner) {
-        System.out.println("Enter the number of strings");
-        int number = scanner.nextInt();
-        scanner.nextLine();
-        System.out.println("Enter all strings");
-        for (int i = 0; i < number; i++) {
+        while (scanner.hasNext()) {
             strings.add(scanner.nextLine());
         }
-        System.out.println();
     }
 }
