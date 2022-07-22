@@ -29,7 +29,7 @@ public class Main {
                 result.add(string);
             }
         }
-        if (result == null) {
+        if (result.size() == 0) {
             System.out.println("No matching string found.");
         } else {
             System.out.println();
