@@ -1,32 +1,55 @@
 package search;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Map<String, Integer> wordMap = new HashMap<>();
+        List<String> strings = new ArrayList<>();
 
-        readWords(wordMap, scanner);
-        String stringToFind = scanner.nextLine();
-        findWord(wordMap, stringToFind);
+        readStrings(strings, scanner);
+        System.out.println("Enter the number of search queries");
+        int queries = scanner.nextInt();
+        scanner.nextLine();
+        for (int i = 0; i < queries; i++) {
+            System.out.println("Enter data to search string:");
+            String stringToFind = scanner.nextLine();
+            findWord(strings, stringToFind);
+        }
     }
 
-    private static void findWord(Map<String, Integer> wordMap, String stringToFind) {
-        if (!wordMap.containsKey(stringToFind)) {
-            System.out.println("Not found");
-            return;
+    private static void findWord(List<String> strings, String stringToFind) {
+        List<String> result = new ArrayList<>();
+        for (String string : strings) {
+            if (string.toLowerCase().contains(stringToFind.toLowerCase())) {
+                result.add(string);
+            }
         }
-
-        System.out.println(wordMap.get(stringToFind));
+        if (result == null) {
+            System.out.println("No matching string found.");
+        } else {
+            System.out.println();
+            System.out.println("Found strings:");
+            for (String string : result) {
+                System.out.println(string);
+            }
+        }
+        System.out.println();
     }
 
-    private static void readWords(Map<String, Integer> wordMap, Scanner scanner) {
-        String[] input = scanner.nextLine().split(" ");
-        for (int i = 0; i < input.length; i++) {
-            wordMap.put(input[i], i + 1);
+    private static void readStrings(List<String> strings, Scanner scanner) {
+        System.out.println("Enter the number of strings");
+        int number = scanner.nextInt();
+        scanner.nextLine();
+        System.out.println();
+        System.out.println("Enter all strings");
+        for (int i = 0; i < number; i++) {
+            strings.add(scanner.nextLine());
         }
+        System.out.println();
     }
 }
