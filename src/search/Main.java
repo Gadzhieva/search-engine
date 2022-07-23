@@ -3,16 +3,20 @@ package search;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         List<String> strings = new ArrayList<>();
+        Map<String, List<Integer>> wordMap = new HashMap<>();
         File file = new File(args[1]);
         Scanner scanner = new Scanner(System.in);
         try (Scanner fileScanner = new Scanner(file)) {
-            readStrings(strings, fileScanner);
+            readStrings(strings, wordMap, fileScanner);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -22,7 +26,7 @@ public class Main {
             System.out.println();
             switch (command) {
                 case "1":
-                    search(strings, scanner);
+                    search(strings, wordMap, scanner);
                     break;
                 case "2":
                     printAll(strings);
@@ -46,10 +50,10 @@ public class Main {
         System.out.println();
     }
 
-    private static void search(List<String> strings, Scanner scanner) {
+    private static void search(List<String> strings, Map<String, List<Integer>> wordMap, Scanner scanner) {
         System.out.println("Enter data to search string:");
         String stringToFind = scanner.nextLine();
-        findWord(strings, stringToFind);
+        findWord(strings, wordMap, stringToFind);
     }
 
     private static String chooseCommand(Scanner scanner) {
@@ -61,26 +65,28 @@ public class Main {
     }
 
 
-    private static void findWord(List<String> strings, String stringToFind) {
-        List<String> result = new ArrayList<>();
-        for (String string : strings) {
-            if (string.toLowerCase().contains(stringToFind.toLowerCase())) {
-                result.add(string);
-            }
-        }
+    private static void findWord(List<String> strings, Map<String, List<Integer>> wordMap, String stringToFind) {
+        List<Integer> result = wordMap.getOrDefault(stringToFind, Collections.emptyList());
         if (result.size() == 0) {
             System.out.println("No matching string found.");
         } else {
-            for (String string : result) {
-                System.out.println(string);
+            for (Integer index : result) {
+                System.out.println(strings.get(index));
             }
         }
         System.out.println();
     }
 
-    private static void readStrings(List<String> strings, Scanner scanner) {
+    private static void readStrings(List<String> strings, Map<String, List<Integer>> wordMap, Scanner scanner) {
+        int index = 0;
         while (scanner.hasNext()) {
-            strings.add(scanner.nextLine());
+            String input = scanner.nextLine();
+            strings.add(input);
+            String[] inputWords = input.split(" ");
+            for (String word : inputWords) {
+                wordMap.computeIfAbsent(word, k -> new ArrayList<>()).add(index);
+            }
+            index++;
         }
     }
 }
