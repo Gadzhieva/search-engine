@@ -3,30 +3,32 @@ package search;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
+
+    private static final Map<String, SearchStrategy> STRATEGY_MAP = Map.of(
+            "ALL", new AllStrategy(),
+            "ANY", new AnyStrategy(),
+            "NONE", new NoneStrategy()
+    );
+
     public static void main(String[] args) {
-        List<String> strings = new ArrayList<>();
+        Searcher searcher = new Searcher();
         Map<String, List<Integer>> wordMap = new HashMap<>();
         File file = new File(args[1]);
         Scanner scanner = new Scanner(System.in);
-        try (Scanner fileScanner = new Scanner(file)) {
-            readStrings(strings, wordMap, fileScanner);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        List<String> strings = readStrings(wordMap, file);
 
         while (true) {
             String command = chooseCommand(scanner);
             System.out.println();
             switch (command) {
                 case "1":
-                    search(strings, wordMap, scanner);
+                    findStrings(wordMap, strings, scanner, searcher);
                     break;
                 case "2":
                     printAll(strings);
@@ -42,18 +44,28 @@ public class Main {
         }
     }
 
+    private static void findStrings(Map<String, List<Integer>> wordMap, List<String> strings,
+                                    Scanner scanner, Searcher searcher) {
+        System.out.println("Select a matching strategy: ALL, ANY, NONE");
+        String strategyInput = scanner.nextLine();
+
+        SearchStrategy strategy = STRATEGY_MAP.get(strategyInput);
+
+        if (strategy == null) {
+            System.out.println("Wrong input, try again");
+            return;
+        }
+
+        searcher.setStrategy(strategy);
+        searcher.search(strings, wordMap, scanner);
+    }
+
     private static void printAll(List<String> strings) {
         System.out.println("=== List of strings ===");
         for (String string : strings) {
             System.out.println(string);
         }
         System.out.println();
-    }
-
-    private static void search(List<String> strings, Map<String, List<Integer>> wordMap, Scanner scanner) {
-        System.out.println("Enter data to search string:");
-        String stringToFind = scanner.nextLine();
-        findWord(strings, wordMap, stringToFind);
     }
 
     private static String chooseCommand(Scanner scanner) {
@@ -64,29 +76,23 @@ public class Main {
         return scanner.nextLine();
     }
 
-
-    private static void findWord(List<String> strings, Map<String, List<Integer>> wordMap, String stringToFind) {
-        List<Integer> result = wordMap.getOrDefault(stringToFind, Collections.emptyList());
-        if (result.size() == 0) {
-            System.out.println("No matching string found.");
-        } else {
-            for (Integer index : result) {
-                System.out.println(strings.get(index));
-            }
-        }
-        System.out.println();
-    }
-
-    private static void readStrings(List<String> strings, Map<String, List<Integer>> wordMap, Scanner scanner) {
+    private static List<String> readStrings(Map<String, List<Integer>> wordMap, File file) {
+        List<String> result = new ArrayList<>();
         int index = 0;
-        while (scanner.hasNext()) {
-            String input = scanner.nextLine();
-            strings.add(input);
-            String[] inputWords = input.split(" ");
-            for (String word : inputWords) {
-                wordMap.computeIfAbsent(word, k -> new ArrayList<>()).add(index);
+        try (Scanner fileScanner = new Scanner(file)) {
+            while (fileScanner.hasNext()) {
+                String input = fileScanner.nextLine();
+                result.add(input);
+                String[] inputWords = input.split(" ");
+                for (String word : inputWords) {
+                    wordMap.computeIfAbsent(word.toLowerCase(), k -> new ArrayList<>()).add(index);
+                }
+                index++;
             }
-            index++;
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
+
+        return result;
     }
 }
